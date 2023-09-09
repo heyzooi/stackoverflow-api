@@ -7,6 +7,11 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.30"
+dotenvy = "0.15.7"
+log = "0.4.20"
+pretty_env_logger = "0.5.0"
 rocket = { version = "0.5.0-rc.3", features = ["json"] }
 serde = { version = "1.0.188", features = ["derive"] }
+sqlx = { version = "0.7.1", features = ["postgres", "time", "uuid", "runtime-tokio-rustls"] }
+thiserror = "1.0.48"
 uuid = { version = "1.4.1", features = ["v4"] }
