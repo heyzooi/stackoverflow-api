@@ -5,7 +5,11 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.dev.package.sqlx-macros]
+opt-level = 3
+
 [dependencies]
+async-trait = "0.1.73"
 chrono = "0.4.30"
 dotenvy = "0.15.7"
 log = "0.4.20"

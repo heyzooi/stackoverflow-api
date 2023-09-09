@@ -13,6 +13,7 @@ use sqlx::postgres::PgPoolOptions;
 mod cors;
 mod handlers;
 mod models;
+mod persistance;
 
 use cors::*;
 use handlers::*;
@@ -26,17 +27,7 @@ async fn rocket() -> _ {
         .max_connections(5)
         .connect(&std::env::var("DATABASE_URL").expect("DATABASE_URL must be set."))
         .await
-        .expect("Failed to create Postgres connection pool!");
-    
-    // TODO: Delete this query
-    let recs = sqlx::query!("SELECT * FROM questions")
-            .fetch_all(&pool)
-            .await
-            .unwrap();
-
-    // TODO: Delete these log statements
-    info!("********* Question Records *********");
-    info!("{:?}", recs);
+        .expect("Failed to create Postgres connection pool!");    
 
     rocket::build()
         .mount(
