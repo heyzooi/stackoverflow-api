@@ -64,13 +64,6 @@ impl AnswersDao for AnswersDaoImpl {
         let uuid = Uuid::parse_str(&answer_uuid)
         .map_err(|_| DBError::InvalidUUID(answer_uuid.clone()))?;
 
-        // TODO: Make a database query to delete an answer given the answer uuid.
-        // Here is the SQL query:
-        // ```
-        // DELETE FROM answers WHERE answer_uuid = $1
-        // ```
-        // If executing the query results in an error, map that error
-        // to a `DBError::Other` error and early return from this function.
         let query = sqlx::query!("DELETE FROM answers WHERE answer_uuid = $1", uuid)
         .execute(&self.db)
         .await
