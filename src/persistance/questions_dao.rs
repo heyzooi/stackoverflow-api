@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use rocket::futures::future::ok;
 use sqlx::PgPool;
 use uuid::Uuid;
 

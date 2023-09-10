@@ -1,10 +1,26 @@
-use chrono::Utc;
 use rocket::{serde::json::Json, State};
-use uuid::Uuid;
 
 use crate::{models::*, persistance::{questions_dao::QuestionsDao, answers_dao::AnswersDao}};
 
 mod handlers_inner;
+use handlers_inner::*;
+
+#[derive(Responder)]
+pub enum APIError {
+    #[response(status = 400)]
+    BadRequest(String),
+    #[response(status = 500)]
+    InternalError(String),
+}
+
+impl From<HandlerError> for APIError {
+    fn from(value: HandlerError) -> Self {
+        match value {
+            HandlerError::BadRequest(s) => Self::BadRequest(s),
+            HandlerError::InternalError(s) => Self::InternalError(s),
+        }
+    }
+}
 
 // ---- CRUD for Questions ----
 
@@ -12,43 +28,31 @@ mod handlers_inner;
 pub async fn create_question(
     question: Json<Question>,
     questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>,
-) -> Json<QuestionDetail> {
-    let question = QuestionDetail {
-        question_uuid: Uuid::new_v4().to_string(),
-        title: question.title.clone(),
-        description: question.description.clone(),
-        created_at: Utc::now().to_rfc3339(),
-    };
-    Json(question)
+) -> Result<Json<QuestionDetail>, APIError> {
+    handlers_inner::create_question(question.0, questions_dao)
+    .await
+    .map(Json)
+    .map_err(APIError::from)
 }
 
 #[get("/questions")]
 pub async fn read_questions(
     questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>,
-) -> Json<Vec<QuestionDetail>> {
-    let questions = vec![
-        QuestionDetail {
-            question_uuid: Uuid::new_v4().to_string(),
-            title: "Question 1".to_owned(),
-            description: "Question Desc 1".to_owned(),
-            created_at: Utc::now().to_rfc3339(),
-        },
-        QuestionDetail {
-            question_uuid: Uuid::new_v4().to_string(),
-            title: "Question 1".to_owned(),
-            description: "Question Desc 1".to_owned(),
-            created_at: Utc::now().to_rfc3339(),
-        }
-    ];
-    Json(questions)
+) -> Result<Json<Vec<QuestionDetail>>, APIError> {
+    handlers_inner::read_questions(questions_dao)
+    .await
+    .map(Json)
+    .map_err(APIError::from)
 }
 
 #[delete("/question", data = "<question_uuid>")]
 pub async fn delete_question(
     question_uuid: Json<QuestionId>,
     questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>,
-) {
-    println!("Delete question: {question_uuid:?}");
+) -> Result<(), APIError> {
+    handlers_inner::delete_question(question_uuid.0, questions_dao)
+    .await
+    .map_err(APIError::from)
 }
 
 // ---- CRUD for Answers ----
@@ -57,42 +61,30 @@ pub async fn delete_question(
 pub async fn create_answer(
     answer: Json<Answer>,
     answers_dao: &State<Box<dyn AnswersDao + Sync + Send>>,
-) -> Json<AnswerDetail> {
-    let answer = AnswerDetail {
-        answer_uuid: Uuid::new_v4().to_string(),
-        question_uuid: answer.question_uuid.clone(),
-        content: answer.content.clone(),
-        created_at: Utc::now().to_rfc3339(),
-    };
-    Json(answer)
+) -> Result<Json<AnswerDetail>, APIError> {
+    handlers_inner::create_answer(answer.0, answers_dao)
+    .await
+    .map(Json)
+    .map_err(APIError::from)
 }
 
 #[get("/answers", data = "<question_uuid>")]
 pub async fn read_answers(
     question_uuid: Json<QuestionId>,
     answers_dao: &State<Box<dyn AnswersDao + Sync + Send>>,
-) -> Json<Vec<AnswerDetail>> {
-    let answers = vec![
-        AnswerDetail {
-            answer_uuid: Uuid::new_v4().to_string(),
-            question_uuid: Uuid::new_v4().to_string(),
-            content: "Answer 1".to_owned(),
-            created_at: Utc::now().to_rfc3339(),
-        },
-        AnswerDetail {
-            answer_uuid: Uuid::new_v4().to_string(),
-            question_uuid: Uuid::new_v4().to_string(),
-            content: "Answer 2".to_owned(),
-            created_at: Utc::now().to_rfc3339(),
-        }
-    ];
-    Json(answers)
+) -> Result<Json<Vec<AnswerDetail>>, APIError> {
+    handlers_inner::read_answers(question_uuid.0, answers_dao)
+    .await
+    .map(Json)
+    .map_err(APIError::from)
 }
 
 #[delete("/answer", data = "<answer_uuid>")]
 pub async fn delete_answer(
     answer_uuid: Json<AnswerId>,
     answers_dao: &State<Box<dyn AnswersDao + Sync + Send>>,
-) {
-    println!("Delete answer: {answer_uuid:?}");
+) -> Result<(), APIError> {
+    handlers_inner::delete_answer(answer_uuid.0, answers_dao)
+    .await
+    .map_err(APIError::from)
 }

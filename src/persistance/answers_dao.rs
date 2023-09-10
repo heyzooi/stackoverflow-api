@@ -77,21 +77,9 @@ impl AnswersDao for AnswersDaoImpl {
     }
 
     async fn get_answers(&self, question_uuid: String) -> Result<Vec<AnswerDetail>, DBError> {
-        // Use the `sqlx::types::Uuid::parse_str` method to parse `question_uuid` into a `Uuid` type.
-        // parse_str docs: https://docs.rs/sqlx/latest/sqlx/types/struct.Uuid.html#method.parse_str
-        //
-        // If `parse_str` returns an error, map the error to a `DBError::InvalidUUID` error
-        // and early return from this function.
         let uuid = Uuid::parse_str(&question_uuid)
         .map_err(|_| DBError::InvalidUUID(question_uuid.clone()))?;
 
-        // Make a database query to get all answers associated with a question uuid.
-        // Here is the SQL query:
-        // ```
-        // SELECT * FROM answers WHERE question_uuid = $1
-        // ```
-        // If executing the query results in an error, map that error
-        // to a `DBError::Other` error and early return from this function.
         let records = sqlx::query!("SELECT * FROM answers WHERE question_uuid = $1", uuid)
         .fetch_all(&self.db)
         .await

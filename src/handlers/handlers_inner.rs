@@ -26,7 +26,7 @@ pub async fn create_question(
         Ok(question) => Ok(question),
         Err(err) => {
             error!("Error creating question: {err:?}");
-            Err(HandlerError::InternalError(format!("{err}")))
+            Err(HandlerError::default_internal_error())
         }
     }
 }
@@ -40,7 +40,7 @@ pub async fn read_questions(
         Ok(questions) => Ok(questions), // return questions
         Err(err) => {
             error!("Error reading questions: {err:?}");
-            Err(HandlerError::InternalError(format!("{err}")))
+            Err(HandlerError::default_internal_error())
         }
     }
 }
@@ -54,7 +54,7 @@ pub async fn delete_question(
     .map(|_| Ok(()))
     .map_err(|err| {
         error!("Error deleting questions: {err:?}");
-        HandlerError::InternalError(format!("{err}"))
+        HandlerError::default_internal_error()
     })?
 }
 
@@ -86,7 +86,7 @@ pub async fn read_answers(
         Ok(answers) => Ok(answers),
         Err(err) => {
             error!("Error reading answers: {err:?}");
-            Err(HandlerError::InternalError("".to_owned()))
+            Err(HandlerError::default_internal_error())
         }
     }
 }
@@ -100,7 +100,7 @@ pub async fn delete_answer(
     .map(|_| Ok(()))
     .map_err(|err| {
         error!("Error deleting answer: {err:?}");
-        HandlerError::InternalError("".to_owned())
+        HandlerError::default_internal_error()
     })?
 }
 
