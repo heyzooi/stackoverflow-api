@@ -1,8 +1,8 @@
 use chrono::Utc;
-use rocket::{serde::json::Json};
+use rocket::{serde::json::Json, State};
 use uuid::Uuid;
 
-use crate::models::*;
+use crate::{models::*, persistance::{questions_dao::QuestionsDao, answers_dao::AnswersDao}};
 
 mod handlers_inner;
 
@@ -11,6 +11,7 @@ mod handlers_inner;
 #[post("/question", data = "<question>")]
 pub async fn create_question(
     question: Json<Question>,
+    questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>,
 ) -> Json<QuestionDetail> {
     let question = QuestionDetail {
         question_uuid: Uuid::new_v4().to_string(),
@@ -22,7 +23,9 @@ pub async fn create_question(
 }
 
 #[get("/questions")]
-pub async fn read_questions() -> Json<Vec<QuestionDetail>> {
+pub async fn read_questions(
+    questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>,
+) -> Json<Vec<QuestionDetail>> {
     let questions = vec![
         QuestionDetail {
             question_uuid: Uuid::new_v4().to_string(),
@@ -42,7 +45,8 @@ pub async fn read_questions() -> Json<Vec<QuestionDetail>> {
 
 #[delete("/question", data = "<question_uuid>")]
 pub async fn delete_question(
-    question_uuid: Json<QuestionId>
+    question_uuid: Json<QuestionId>,
+    questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>,
 ) {
     println!("Delete question: {question_uuid:?}");
 }
@@ -52,6 +56,7 @@ pub async fn delete_question(
 #[post("/answer", data = "<answer>")]
 pub async fn create_answer(
     answer: Json<Answer>,
+    answers_dao: &State<Box<dyn AnswersDao + Sync + Send>>,
 ) -> Json<AnswerDetail> {
     let answer = AnswerDetail {
         answer_uuid: Uuid::new_v4().to_string(),
@@ -62,8 +67,11 @@ pub async fn create_answer(
     Json(answer)
 }
 
-#[get("/answers")]
-pub async fn read_answers() -> Json<Vec<AnswerDetail>> {
+#[get("/answers", data = "<question_uuid>")]
+pub async fn read_answers(
+    question_uuid: Json<QuestionId>,
+    answers_dao: &State<Box<dyn AnswersDao + Sync + Send>>,
+) -> Json<Vec<AnswerDetail>> {
     let answers = vec![
         AnswerDetail {
             answer_uuid: Uuid::new_v4().to_string(),
@@ -83,7 +91,8 @@ pub async fn read_answers() -> Json<Vec<AnswerDetail>> {
 
 #[delete("/answer", data = "<answer_uuid>")]
 pub async fn delete_answer(
-    answer_uuid: Json<AnswerId>
+    answer_uuid: Json<AnswerId>,
+    answers_dao: &State<Box<dyn AnswersDao + Sync + Send>>,
 ) {
     println!("Delete answer: {answer_uuid:?}");
 }

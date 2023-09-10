@@ -28,7 +28,6 @@ impl QuestionsDaoImpl {
 impl QuestionsDao for QuestionsDaoImpl {
     async fn create_question(&self, question: Question) -> Result<QuestionDetail, DBError> {
         let record = sqlx::query!(
-            // QuestionDetail,
             "INSERT INTO questions (title, description) VALUES ($1, $2) RETURNING *",
             question.title,
             question.description
