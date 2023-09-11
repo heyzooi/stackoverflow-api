@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  SQLX_OFFLINE: true
+  DATABASE_URL: postgres://postgres:postgrespw@localhost:55008
 
 jobs:
   build:
@@ -28,6 +28,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install sqlx-cli
+      run: cargo install sqlx-cli
+    - name: Run sqlx migrate
+      run: sqlx migrate run
     - name: Build
       run: cargo build --verbose
     - name: Run tests
